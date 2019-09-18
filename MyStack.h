@@ -1,6 +1,3 @@
-//this is the code in its current state
-//I will working on some minor modifications and uploading a driver program in the near future
-
 #ifndef MY_STACK_WIEWEL
 #define MY_STACK_WIEWEL
 
@@ -40,7 +37,13 @@ public:
 		:array(new DataT[50]), inUse(0), allocated(50) {}
 	MyStack(int a) //constructor with user determining 'a' initial size of arr
 		:array(new DataT[a]), inUse(0), allocated(a) {}
-	MyStack(const MyStack& b); //copy constructor defined in .default
+	MyStack(const MyStack& b) //copy constructor
+		:array(new DataT[b.getAllocated()]), inUse(b.getInUse()), 
+		allocated(b.getAllocated())
+	{
+		for(int i = 0; i < this->inUse; i++) //copy elements over
+			this->array[i] = b.getArrayPos(i);
+	}
 	~MyStack() //destructor calls destroy function to deallocate memory
 	{ this->destroy(); }
 	
@@ -54,20 +57,27 @@ public:
 	{ return this->inUse <= 0; }
 	void reset() //resets stack by putting inUse to 0. No need to deallocate
 	{ this->inUse = 0; }
-	DataT back() const//returns the bottom of a stack
-	{ return this->array[0]; }
 	void pop() //pops top element off the stack	
-	{ (this->inUse)--; }
+	{ (this->inUse)--; } //there is an untested version below that will
+						//also shrink the array size if it is using 1/4 
+						//or less of the allocated space
+	void pop(DataT& elem)//pops top element and sets elem equal to previous top
+	{
+		elem = top(); //set elem to the current top
+		(this->inUse)--;
+	}
 	
 	//public functions defined in cpp
 	
 	DataT top() const; //returns top of stack
+	DataT bottom() const;//returns the bottom of a stack
 	void push(const DataT& datum); //function to push by constant reference
 	MyStack operator=(const MyStack& b); //operator = overloading for MyStack
 	void swap(MyStack& b);
 	void reverse(); //I'm thinking of something like
 	/*there was also somewhere saying it could be done recursively, 
-	but I think that'd require another stack. */
+	but I think that'd require another stack and was meant for 
+	a link-list based stack as opposed to array-based. */
 	
 
 };
@@ -88,8 +98,11 @@ void MyStack<DataT>::grow()
 	
 	delete[] temp; //free space
 }
-//function not currently used
+//function not currently used and is therefore commented out
+//you will need to uncomment shrink() to use the shrink portion
+//of the pop(void)
 //private function to shrink array
+/*
 template <typename DataT>
 void MyStack<DataT>::shrink()
 {
@@ -105,6 +118,7 @@ void MyStack<DataT>::shrink()
 	
 	delete[] temp; //free old space
 }
+*/
 template <typename DataT>
 void MyStack<DataT>::swap(DataT& a, DataT& b)
 {
@@ -113,15 +127,10 @@ void MyStack<DataT>::swap(DataT& a, DataT& b)
 	b = c;
 }
 //public copy constructor
+/*
 template <typename DataT>
 MyStack<DataT>::MyStack(const MyStack<DataT>& b)
-{
-	//make sure not copy-constructing self
-	if(this != &b)
-	{
-		//clear any previous contents
-		this->destroy();
-		
+{		
 		//set members equal to b's 
 		this->inUse = b.getInUse();
 		this->allocated = b.getAllocated();
@@ -132,8 +141,8 @@ MyStack<DataT>::MyStack(const MyStack<DataT>& b)
 		{
 			this->array[i] = b.getArrayPos(i);
 		}
-	}
 }
+*/
 //public top function
 template <typename DataT>
 DataT MyStack<DataT>::top() const
@@ -149,7 +158,25 @@ DataT MyStack<DataT>::top() const
 		return this->array[this->inUse - 1];
 	}
 }
+template <typename DataT>
+DataT MyStack<DataT>::bottom() const
+{
+	if(this->isEmpty())
+	{
+		//trying to access invalid location
+		static DataT garbage;
+		return garbage;
+	}
+	else
+	{
+		//valid bottom, return it
+		return this->array[0];
+	}
+}
 /* pop has been moved to defined in .h
+this version has been kept here as legacy code for easy implementation
+if you desire a pop that also uses the shrink method
+this version has not been tested
 //public pop function
 template <typename DataT>
 void MyStack<DataT>::pop()
@@ -168,6 +195,12 @@ void MyStack<DataT>::push(const DataT& datum)
 	//if stack full, grow it
 	if(this->inUse == this->allocated)
 		this->grow();
+	
+	//popping has the potential to have made inUse less than 0
+	//here we fix that so that if the stacked has been popped while empty
+	//it will start at a reasonable value
+	if(this->inUse < 0)
+		this->inUse = 0;
 	
 	//put datum onto the stack and update inUse
 	this->array[inUse] = datum;
@@ -242,3 +275,4 @@ void swap(MyStack<DataT>& a, MyStack<DataT>& b)
 }
 
 #endif
+
