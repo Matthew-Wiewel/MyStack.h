@@ -67,7 +67,7 @@ Used to deallocate dynamic memory.
 void grow()
 Used to double size of array and copy over elements to new array.
 
-void swap(DataT&, DataT&)
+static void swap(DataT&, DataT&)
 Used to swap elements within MyStack class.
 
 # Potential Functionality
