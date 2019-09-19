@@ -27,7 +27,7 @@ private:
 	
 	void grow(); //used to grow array when it is not large enough
 	//void shrink(); //used to shrink array when it has lots of unused spaces
-	void swap(DataT& a, DataT& b); //because this is need for swap within
+	static void swap(DataT& a, DataT& b); //because this is need for swap within
 	
 public: 
 
@@ -275,4 +275,3 @@ void swap(MyStack<DataT>& a, MyStack<DataT>& b)
 }
 
 #endif
-
